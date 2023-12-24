@@ -3,10 +3,10 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-
+const session = require('express-session');
+// Import Route
+const adminRoute = require('./routes/admin');
+const usersRouter = require('./routes/users');
 var app = express();
 const mongoose = require('mongoose');
 
@@ -26,7 +26,6 @@ mongoose.connection.on('error', (err) => {
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -40,10 +39,19 @@ app.set('views', path.join(__dirname, 'views'));
 app.get('/', (req, res) => {
     res.render('dashboard');
 });
-
-// app.use('/', indexRouter);
-// app.use('/users', usersRouter);
+// Routes define
+app.use('/admin', adminRoute); 
 app.use('/api/users', usersRouter);
+// Routes define
+
+// Use express-session middleware
+app.use(session({
+  secret: '1234567890',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // Set to true if using HTTPS
+}));
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
@@ -57,7 +65,9 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  // res.render('error');
+  res.render('no_data_found.ejs');
+
 });
 
 module.exports = app;
